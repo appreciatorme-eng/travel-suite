@@ -303,7 +303,7 @@ export default function CreateTripModal({ open, onOpenChange, onSuccess }: Creat
                     <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
                     <Button
                         onClick={handleCreateTrip}
-                        disabled={creating || (generatedData && (!clientId || !startDate || !endDate))}
+                        disabled={creating || !!(generatedData && (!clientId || !startDate || !endDate))}
                         className="bg-primary hover:bg-primary/90"
                     >
                         {creating ? (

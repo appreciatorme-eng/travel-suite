@@ -215,6 +215,7 @@ export default function AdminTripsPage() {
                     <p className="text-2xl font-[var(--font-display)] text-[#1b140a]">
                         {
                             trips.filter((t) => {
+                                if (!t.start_date) return false;
                                 const tripDate = new Date(t.start_date);
                                 const now = new Date();
                                 return (
@@ -267,7 +268,7 @@ export default function AdminTripsPage() {
                                             </span>
                                             <span className="flex items-center gap-1">
                                                 <Calendar className="h-3 w-3" />
-                                                {formatDate(trip.start_date)}
+                                                {formatDate(trip.start_date || "")}
                                             </span>
                                             {trip.itineraries?.duration_days && (
                                                 <span>
@@ -280,7 +281,7 @@ export default function AdminTripsPage() {
                                 <div className="flex items-center gap-4">
                                     <span
                                         className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                            trip.status
+                                            trip.status || ""
                                         )}`}
                                     >
                                         {trip.status}

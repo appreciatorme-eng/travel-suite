@@ -37,7 +37,7 @@ async function getAdminProfile(req: NextRequest) {
     return profile;
 }
 
-export async function POST(req: NextRequest, { params }: { params?: { id?: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id?: string }> }) {
     const startedAt = Date.now();
     const requestId = getRequestId(req);
     const requestContext = getRequestContext(req, requestId);
@@ -47,7 +47,8 @@ export async function POST(req: NextRequest, { params }: { params?: { id?: strin
         if (!adminProfile) return withRequestId({ error: "Unauthorized" }, requestId, { status: 401 });
         if (!adminProfile.organization_id) return withRequestId({ error: "Admin organization not configured" }, requestId, { status: 400 });
 
-        const id = (params?.id || "").trim();
+        const { id: rawId } = await params;
+        const id = (rawId || "").trim();
         const { data: contact } = await supabaseAdmin
             .from("crm_contacts")
             .select("id,organization_id,full_name,email,phone,phone_normalized,converted_profile_id")

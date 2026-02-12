@@ -81,13 +81,14 @@ async function requireAdmin(req: NextRequest) {
     return { userId: user.id, organizationId: adminProfile.organization_id };
 }
 
-export async function GET(req: NextRequest, { params }: { params?: { id?: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id?: string }> }) {
     try {
         const admin = await requireAdmin(req);
         if ("error" in admin) return admin.error;
 
         const pathId = req.nextUrl.pathname.split("/").pop();
-        const tripId = (params?.id || pathId || "").trim();
+        const { id: paramId } = await params;
+        const tripId = (paramId || pathId || "").trim();
 
         if (!tripId || tripId === "undefined") {
             return NextResponse.json({ error: "Missing trip id" }, { status: 400 });

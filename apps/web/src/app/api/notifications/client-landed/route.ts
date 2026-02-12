@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Trip not found" }, { status: 404 });
         }
 
-        const itinerary = trip.itineraries;
+        const itinerary = Array.isArray(trip.itineraries) ? trip.itineraries[0] : trip.itineraries;
         const destination = itinerary?.destination || "your destination";
 
         // Calculate current day of trip
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
             : 1;
 
         // Get today's driver assignment
-        const { data: assignment } = await supabaseAdmin
+        const { data: assignmentRaw } = await supabaseAdmin
             .from("trip_driver_assignments")
             .select(`
                 *,
@@ -75,6 +75,13 @@ export async function POST(request: NextRequest) {
             .eq("trip_id", tripId)
             .eq("day_number", dayNumber)
             .single();
+
+        const assignment = assignmentRaw ? {
+            ...assignmentRaw,
+            external_drivers: Array.isArray(assignmentRaw.external_drivers)
+                ? assignmentRaw.external_drivers[0]
+                : assignmentRaw.external_drivers
+        } : null;
 
         // Get today's activities from the itinerary raw_data
         const tripData = itinerary?.raw_data as ItineraryResult | undefined;
@@ -113,7 +120,7 @@ export async function POST(request: NextRequest) {
         let driverWhatsAppLink = null;
         if (assignment?.external_drivers && activities) {
             const driver = assignment.external_drivers;
-            const clientName = trip.profiles?.full_name || "Client";
+            const clientName = (Array.isArray(trip.profiles) ? trip.profiles[0] : trip.profiles)?.full_name || "Client";
 
             const message = formatDriverAssignmentMessage({
                 clientName,
@@ -121,7 +128,6 @@ export async function POST(request: NextRequest) {
                 pickupLocation: assignment.pickup_location || destination,
                 activities: activities.map((activity) => ({
                     title: activity.title,
-                    duration_minutes: activity.duration_minutes,
                     duration: activity.duration,
                 })),
                 hotelName: accommodation?.hotel_name || "TBD",
@@ -136,7 +142,7 @@ export async function POST(request: NextRequest) {
             recipient_id: user.id,
             notification_type: "client_landed",
             title: "Client Landed",
-            body: `${trip.profiles?.full_name || "Client"} has landed for trip to ${destination}`,
+            body: `${(Array.isArray(trip.profiles) ? trip.profiles[0] : trip.profiles)?.full_name || "Client"} has landed for trip to ${destination}`,
             status: "sent",
             recipient_type: "client",
         });

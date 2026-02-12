@@ -29,6 +29,7 @@ export default function PDFDownloadButton({ itinerary, className = "" }: PDFDown
                 destination: itinerary.destination || "",
                 summary: itinerary.summary || "",
                 days: itinerary.days || [],
+                duration_days: itinerary.duration_days || (itinerary.days?.length || 1),
             };
 
             // Generate the PDF blob

@@ -106,10 +106,29 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: error.message }, { status: 400 });
         }
 
-        const trips = ((data || []) as TripListRow[]).map((trip) => ({
-            ...trip,
-            destination: trip.itineraries?.destination || "TBD",
-        }));
+        const trips = (data || []).map((t: any) => {
+            const profile = Array.isArray(t.profiles) ? t.profiles[0] : t.profiles;
+            const itinerary = Array.isArray(t.itineraries) ? t.itineraries[0] : t.itineraries;
+
+            return {
+                id: t.id,
+                status: t.status,
+                start_date: t.start_date,
+                end_date: t.end_date,
+                created_at: t.created_at,
+                organization_id: t.organization_id,
+                profiles: profile ? {
+                    full_name: profile.full_name,
+                    email: profile.email
+                } : null,
+                itineraries: itinerary ? {
+                    trip_title: itinerary.trip_title,
+                    duration_days: itinerary.duration_days,
+                    destination: itinerary.destination
+                } : null,
+                destination: itinerary?.destination || "TBD",
+            };
+        });
 
         return NextResponse.json({ trips });
     } catch (error) {

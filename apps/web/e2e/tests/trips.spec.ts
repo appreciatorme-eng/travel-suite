@@ -67,7 +67,7 @@ test.describe('Admin Trip Management', () => {
     const hasFilter = await statusFilter.isVisible().catch(() => false);
 
     if (hasFilter) {
-      await statusFilter.selectOption({ label: /in progress|active/i });
+      await statusFilter.selectOption({ index: 1 }); // Or a specific string if known
 
       // Should filter trips
       await adminPage.waitForTimeout(1000); // Wait for filter to apply

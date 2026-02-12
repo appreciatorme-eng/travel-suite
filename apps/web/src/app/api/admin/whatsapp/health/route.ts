@@ -79,12 +79,14 @@ export async function GET(req: NextRequest) {
 
         const latestByDriver = new Map<string, { recorded_at: string; trip_id: string | null }>();
         if (driverIds.length > 0) {
-            const { data: locationRows = [] } = await supabaseAdmin
+            const { data: locationData } = await supabaseAdmin
                 .from("driver_locations")
                 .select("driver_id,trip_id,recorded_at")
                 .in("driver_id", driverIds)
                 .order("recorded_at", { ascending: false })
                 .limit(1000);
+
+            const locationRows = locationData || [];
 
             for (const row of locationRows) {
                 if (!row.driver_id) continue;
@@ -148,10 +150,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({
             ok: true,
             summary: {
-                total_driver_profiles: driverProfiles.length,
-                drivers_with_phone: driverProfiles.filter((driver) => !!driver.phone_normalized).length,
-                drivers_missing_phone: driverProfiles.filter((driver) => !driver.phone_normalized).length,
-                active_trips_with_driver: activeTrips.length,
+                total_driver_profiles: (driverProfiles || []).length,
+                drivers_with_phone: (driverProfiles || []).filter((driver) => !!driver.phone_normalized).length,
+                drivers_missing_phone: (driverProfiles || []).filter((driver) => !driver.phone_normalized).length,
+                active_trips_with_driver: (activeTrips || []).length,
                 stale_active_driver_trips: staleActiveDriverTrips,
                 location_pings_last_1h: Number(location1h || 0),
                 location_pings_last_24h: Number(location24h || 0),

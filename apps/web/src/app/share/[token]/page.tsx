@@ -57,7 +57,7 @@ export default async function SharedTripPage({
         notFound();
     }
 
-    const tripData = itinerary.raw_data as ItineraryResult;
+    const tripData = itinerary.raw_data as unknown as ItineraryResult;
 
     return (
         <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50">

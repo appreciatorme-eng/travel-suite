@@ -27,5 +27,5 @@ export default async function TripDetailPage({
         notFound();
     }
 
-    return <TripDetailClient itinerary={itinerary} />;
+    return <TripDetailClient itinerary={itinerary as any} />;
 }

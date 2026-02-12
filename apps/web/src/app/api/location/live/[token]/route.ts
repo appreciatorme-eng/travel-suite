@@ -22,10 +22,10 @@ function getClientIp(req: NextRequest): string {
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { token: string } }
+    { params }: { params: Promise<{ token: string }> }
 ) {
     try {
-        const { token } = params;
+        const { token } = await params;
         if (!/^[a-f0-9]{32}$/i.test(token)) {
             return NextResponse.json({ error: "Invalid share token format" }, { status: 400 });
         }
@@ -109,6 +109,11 @@ export async function GET(
             ? await assignmentQuery.eq("day_number", share.day_number).maybeSingle()
             : await assignmentQuery.maybeSingle();
 
+        const tripData = Array.isArray(share.trips) ? share.trips[0] : share.trips;
+        const profileData = tripData?.profiles;
+        // Handle profiles if it's an array (it might be depending on relationship)
+        const clientProfile = Array.isArray(profileData) ? profileData[0] : profileData;
+
         return NextResponse.json({
             share: {
                 trip_id: share.trip_id,
@@ -116,10 +121,10 @@ export async function GET(
                 expires_at: share.expires_at,
             },
             trip: {
-                destination: share.trips?.destination || "Trip",
-                start_date: share.trips?.start_date,
-                end_date: share.trips?.end_date,
-                client_name: share.trips?.profiles?.full_name || null,
+                destination: tripData?.destination || "Trip",
+                start_date: tripData?.start_date,
+                end_date: tripData?.end_date,
+                client_name: clientProfile?.full_name || null,
             },
             assignment: assignment || null,
             location: latestLocation || null,

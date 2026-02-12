@@ -249,7 +249,7 @@ export default function PlannerPage() {
                                     budget={budget}
                                     interests={interests}
                                 />
-                                <ShareItinerary tripTitle={result.trip_title} description={result.summary} />
+                                <ShareItinerary tripTitle={result.trip_title} />
                                 <DownloadPDFButton
                                     data={result}
                                     fileName={`${result.trip_title.replace(/\s+/g, '_')}_Itinerary.pdf`}

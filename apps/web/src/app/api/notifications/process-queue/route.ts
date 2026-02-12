@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@supabase/supabase-js";
+import { Database } from "@/lib/database.types";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { sendNotificationToUser } from "@/lib/notifications";
 import { sendWhatsAppTemplate, sendWhatsAppText } from "@/lib/whatsapp.server";
@@ -22,7 +23,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const queueSecret = process.env.NOTIFICATION_CRON_SECRET || "";
 const signingSecret = process.env.NOTIFICATION_SIGNING_SECRET || "";
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
 type QueueStatus = "pending" | "processing" | "sent" | "failed" | "cancelled";
 
@@ -33,7 +34,7 @@ interface QueueItem {
     recipient_phone: string | null;
     recipient_type: "client" | "driver" | "admin" | null;
     notification_type: string;
-    payload: Record<string, unknown> | null;
+    payload: any;
     attempts: number;
     status: QueueStatus;
 }
@@ -49,7 +50,7 @@ async function resolveOrganizationIdForQueueItem(item: QueueItem): Promise<strin
             .select("organization_id")
             .eq("id", item.trip_id)
             .maybeSingle();
-        if (trip?.organization_id) return trip.organization_id;
+        if ((trip as any)?.organization_id) return (trip as any).organization_id;
     }
 
     if (item.user_id) {
@@ -90,7 +91,7 @@ async function trackDeliveryStatus(params: {
         status: params.status,
         attempt_number: params.attemptNumber,
         error_message: params.errorMessage || null,
-        metadata: params.metadata || {},
+        metadata: (params.metadata as any) || {},
         sent_at: params.status === "sent" ? nowIso : null,
         failed_at: params.status === "failed" ? nowIso : null,
     });
@@ -126,7 +127,7 @@ async function moveToDeadLetter(params: {
         recipient_phone: params.item.recipient_phone,
         recipient_type: params.item.recipient_type,
         notification_type: params.item.notification_type,
-        payload: params.item.payload || {},
+        payload: (params.item.payload as any) || {},
         attempts: params.attempts,
         error_message: params.reason,
         failed_channels: params.failedChannels,
@@ -208,8 +209,9 @@ async function resolveLiveLinkForQueueItem(item: QueueItem, payload: Record<stri
     }
 
     const { data: existing } = await existingQuery.maybeSingle();
-    if (existing?.share_token) {
-        return existing.share_token;
+
+    if ((existing as any)?.share_token) {
+        return (existing as any).share_token;
     }
 
     const shareToken = crypto.randomUUID().replace(/-/g, "");
@@ -218,8 +220,8 @@ async function resolveLiveLinkForQueueItem(item: QueueItem, payload: Record<stri
     const { data: inserted } = await supabaseAdmin
         .from("trip_location_shares")
         .insert({
-            trip_id: tripId,
-            day_number: dayNumber,
+            trip_id: tripId!,
+            day_number: dayNumber as any,
             share_token: shareToken,
             is_active: true,
             expires_at: expiresAt,
@@ -227,7 +229,7 @@ async function resolveLiveLinkForQueueItem(item: QueueItem, payload: Record<stri
         .select("share_token")
         .single();
 
-    return inserted?.share_token || null;
+    return (inserted as any)?.share_token || null;
 }
 
 export async function POST(request: NextRequest) {

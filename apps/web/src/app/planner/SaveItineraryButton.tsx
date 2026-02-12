@@ -52,7 +52,7 @@ export default function SaveItineraryButton({
                     duration_days: days,
                     budget: budget,
                     interests: interests,
-                    raw_data: itineraryData,
+                    raw_data: itineraryData as any,
                 });
 
             if (insertError) throw insertError;
