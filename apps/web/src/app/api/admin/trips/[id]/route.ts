@@ -128,14 +128,18 @@ export async function GET(req: NextRequest, { params }: { params?: { id?: string
             return NextResponse.json({ error: tripError?.message || "Trip not found" }, { status: 404 });
         }
 
+        const itinerary = Array.isArray(tripData.itineraries)
+            ? tripData.itineraries[0]
+            : tripData.itineraries;
+
         const mappedTrip = {
             ...tripData,
-            destination: tripData.itineraries?.destination || "TBD",
-            itineraries: tripData.itineraries
+            destination: itinerary?.destination || "TBD",
+            itineraries: itinerary
                 ? {
-                    ...tripData.itineraries,
+                    ...itinerary,
                     raw_data: {
-                        days: tripData.itineraries.raw_data?.days || [],
+                        days: itinerary.raw_data?.days || [],
                     },
                 }
                 : null,
@@ -225,12 +229,83 @@ export async function GET(req: NextRequest, { params }: { params?: { id?: string
             .limit(1)
             .maybeSingle();
 
+        // --- Conflict Detection Logic ---
+        const busyDriversByDay: Record<number, string[]> = {};
+
+        if (tripData.start_date) {
+            const tripStartDate = new Date(tripData.start_date);
+            const tripDuration = itinerary?.duration_days || 1;
+
+            let tripEndDate: Date;
+            if (tripData.end_date) {
+                tripEndDate = new Date(tripData.end_date);
+            } else {
+                tripEndDate = new Date(tripStartDate);
+                tripEndDate.setDate(tripEndDate.getDate() + tripDuration);
+            }
+
+            // Fetch other trips that overlap with this trip's date range
+            const { data: overlappingTrips } = await supabaseAdmin
+                .from("trips")
+                .select("id, start_date, itineraries(duration_days)") // duration needed to check exact overlap
+                .neq("id", tripId)
+                .or(`start_date.lte.${tripEndDate.toISOString().split('T')[0]},end_date.gte.${tripStartDate.toISOString().split('T')[0]}`);
+
+            if (overlappingTrips && overlappingTrips.length > 0) {
+                const tripIds = overlappingTrips.map(t => t.id);
+
+                // Fetch assignments for those overlapping trips
+                const { data: remoteAssignments } = await supabaseAdmin
+                    .from("trip_driver_assignments")
+                    .select("trip_id, day_number, external_driver_id")
+                    .in("trip_id", tripIds)
+                    .not("external_driver_id", "is", null);
+
+                if (remoteAssignments) {
+                    // Map current trip's dates to day numbers
+                    // For each day `d` in current trip (1..tripDuration):
+                    //   TargetDate = tripStartDate + (d-1) days
+                    //   Check if any remoteAssignment falls on TargetDate effectively
+
+                    for (let day = 1; day <= tripDuration; day++) {
+                        const targetDate = new Date(tripStartDate);
+                        targetDate.setDate(targetDate.getDate() + (day - 1));
+                        const targetDateStr = targetDate.toISOString().split('T')[0]; // simple YYYY-MM-DD compare
+
+                        const busyDriverIds = new Set<string>();
+
+                        remoteAssignments.forEach(assign => {
+                            if (!assign.external_driver_id) return;
+
+                            const remoteTrip = overlappingTrips.find(t => t.id === assign.trip_id);
+                            if (!remoteTrip || !remoteTrip.start_date) return;
+
+                            const remoteStartDate = new Date(remoteTrip.start_date);
+                            const assignmentDate = new Date(remoteStartDate);
+                            assignmentDate.setDate(assignmentDate.getDate() + (assign.day_number - 1));
+
+                            const assignmentDateStr = assignmentDate.toISOString().split('T')[0];
+
+                            if (assignmentDateStr === targetDateStr) {
+                                busyDriverIds.add(assign.external_driver_id);
+                            }
+                        });
+
+                        if (busyDriverIds.size > 0) {
+                            busyDriversByDay[day] = Array.from(busyDriverIds);
+                        }
+                    }
+                }
+            }
+        }
+
         return NextResponse.json({
             trip: mappedTrip,
             drivers: driversData || [],
             assignments: assignmentsMap,
             accommodations: accommodationsMap,
             reminderStatusByDay,
+            busyDriversByDay,
             latestDriverLocation: latestLocation || null,
         });
     } catch (error) {

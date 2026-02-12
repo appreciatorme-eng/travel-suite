@@ -14,6 +14,48 @@ export type Database = {
     }
     public: {
         Tables: {
+            driver_accounts: {
+                Row: {
+                    created_at: string | null
+                    external_driver_id: string
+                    id: string
+                    is_active: boolean
+                    profile_id: string
+                    updated_at: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    external_driver_id: string
+                    id?: string
+                    is_active?: boolean
+                    profile_id: string
+                    updated_at?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    external_driver_id?: string
+                    id?: string
+                    is_active?: boolean
+                    profile_id?: string
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "driver_accounts_external_driver_id_fkey"
+                        columns: ["external_driver_id"]
+                        isOneToOne: false
+                        referencedRelation: "external_drivers"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "driver_accounts_profile_id_fkey"
+                        columns: ["profile_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
             driver_locations: {
                 Row: {
                     accuracy: number | null
@@ -305,6 +347,13 @@ export type Database = {
                     travelers_count: number | null
                     updated_at: string | null
                     welcome_email_sent_at: string | null
+                    onboarding_step: number
+                    bio: string | null
+                    phone_whatsapp: string | null
+                    dietary_requirements: string[] | null
+                    mobility_needs: string | null
+                    driver_info: Json | null
+                    client_info: Json | null
                 }
                 Insert: {
                     avatar_url?: string | null
@@ -332,6 +381,13 @@ export type Database = {
                     travelers_count?: number | null
                     updated_at?: string | null
                     welcome_email_sent_at?: string | null
+                    onboarding_step?: number
+                    bio?: string | null
+                    phone_whatsapp?: string | null
+                    dietary_requirements?: string[] | null
+                    mobility_needs?: string | null
+                    driver_info?: Json | null
+                    client_info?: Json | null
                 }
                 Update: {
                     avatar_url?: string | null
@@ -359,6 +415,13 @@ export type Database = {
                     travelers_count?: number | null
                     updated_at?: string | null
                     welcome_email_sent_at?: string | null
+                    onboarding_step?: number
+                    bio?: string | null
+                    phone_whatsapp?: string | null
+                    dietary_requirements?: string[] | null
+                    mobility_needs?: string | null
+                    driver_info?: Json | null
+                    client_info?: Json | null
                 }
                 Relationships: [
                     {

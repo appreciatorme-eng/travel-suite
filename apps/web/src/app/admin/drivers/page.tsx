@@ -15,7 +15,9 @@ import {
     AlertCircle,
     Link2,
     Link2Off,
+    ExternalLink,
 } from "lucide-react";
+import Link from "next/link";
 import type { Database } from "@/lib/database.types";
 
 type ExternalDriver = Database["public"]["Tables"]["external_drivers"]["Row"];
@@ -55,6 +57,7 @@ const mockDrivers: ExternalDriver[] = [
         is_active: true,
         created_at: "2026-01-10T09:00:00Z",
         updated_at: "2026-02-05T11:00:00Z",
+        photo_url: null,
     },
     {
         id: "mock-driver-2",
@@ -69,6 +72,7 @@ const mockDrivers: ExternalDriver[] = [
         is_active: true,
         created_at: "2026-01-18T12:00:00Z",
         updated_at: "2026-02-02T10:30:00Z",
+        photo_url: null,
     },
 ];
 
@@ -225,6 +229,7 @@ export default function DriversPage() {
                         is_active: true,
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString(),
+                        photo_url: null,
                     };
                     setDrivers((prev) => [newDriver, ...prev]);
                     setSuccess("Driver added successfully (mock)");
@@ -508,16 +513,16 @@ export default function DriversPage() {
 
             {/* Notifications */}
             {success && (
-            <div className="mb-4 p-4 bg-[#f1e4d2] border border-[#eadfcd] rounded-lg flex items-center gap-2 text-[#9c7c46]">
-                <Check className="w-5 h-5" />
-                {success}
-            </div>
+                <div className="mb-4 p-4 bg-[#f1e4d2] border border-[#eadfcd] rounded-lg flex items-center gap-2 text-[#9c7c46]">
+                    <Check className="w-5 h-5" />
+                    {success}
+                </div>
             )}
             {error && (
-            <div className="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-2 text-rose-700">
-                <AlertCircle className="w-5 h-5" />
-                {error}
-            </div>
+                <div className="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-2 text-rose-700">
+                    <AlertCircle className="w-5 h-5" />
+                    {error}
+                </div>
             )}
 
             {/* Search */}
@@ -596,9 +601,10 @@ export default function DriversPage() {
                                                 </span>
                                             </div>
                                             <div>
-                                                <p className="font-medium text-[#1b140a]">
+                                                <Link href={`/admin/drivers/${driver.id}`} className="font-medium text-[#1b140a] hover:underline flex items-center gap-1">
                                                     {driver.full_name}
-                                                </p>
+                                                    <ExternalLink className="w-3 h-3 text-gray-400" />
+                                                </Link>
                                                 {driver.languages && driver.languages.length > 0 && (
                                                     <p className="text-sm text-[#6f5b3e]">
                                                         {driver.languages.join(", ")}
@@ -634,8 +640,8 @@ export default function DriversPage() {
                                     <td className="px-6 py-4">
                                         <span
                                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${driver.is_active
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-gray-100 text-gray-800"
+                                                ? "bg-green-100 text-green-800"
+                                                : "bg-gray-100 text-gray-800"
                                                 }`}
                                         >
                                             {driver.is_active ? "Active" : "Inactive"}

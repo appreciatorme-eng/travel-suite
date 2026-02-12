@@ -5,6 +5,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import 'trip_detail_screen.dart';
+import '../../auth/presentation/screens/onboarding_screen.dart';
 
 class TripsScreen extends StatefulWidget {
   const TripsScreen({super.key});
@@ -19,6 +20,7 @@ class _TripsScreenState extends State<TripsScreen> {
   String? _error;
   String _userRole = 'client';
   bool _driverMapped = false;
+  int _onboardingStep = 2;
 
   @override
   void initState() {
@@ -44,11 +46,12 @@ class _TripsScreenState extends State<TripsScreen> {
 
       final response = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, onboarding_step')
           .eq('id', user.id)
           .maybeSingle();
 
       final role = (response?['role'] as String?) ?? 'client';
+      final step = (response?['onboarding_step'] as int?) ?? 0;
       List<Map<String, dynamic>> trips = [];
       var driverMapped = false;
 
@@ -133,6 +136,7 @@ class _TripsScreenState extends State<TripsScreen> {
       setState(() {
         _userRole = role;
         _driverMapped = driverMapped;
+        _onboardingStep = step;
         _trips = trips;
         _loading = false;
       });
@@ -206,6 +210,64 @@ class _TripsScreenState extends State<TripsScreen> {
                   ),
                 ),
               if (_userRole == 'driver') const SizedBox(height: 8),
+
+              if (_onboardingStep < 2)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: InkWell(
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => OnboardingScreen(
+                            onOnboardingComplete: () {
+                                Navigator.pop(context);
+                                _loadTrips(); // Refresh to update banner
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondary.withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.secondary.withAlpha(50)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.person_outline, color: AppTheme.secondary),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Complete your profile',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.secondary,
+                                  ),
+                                ),
+                                Text(
+                                  'Add details to get better recommendations.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.secondary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
 
               // Content
               Expanded(

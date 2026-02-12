@@ -79,6 +79,13 @@ Phase 5.3 (Complete)
 - [x] Update all project docs to reflect changes
 - **Status:** complete
 
+### Phase 5.4: Trip Experience Enhancements ✓
+- [x] Implement backend driver conflict checks for date overlaps
+- [x] Add frontend UI for unavailable driver status
+- [x] Fix mock data schema to match `day_number` logic
+- [x] Align `ItineraryMap` props with current `Activity` interface
+- **Status:** complete
+
 ### Phase 6: Monetization & SaaS Readiness (Next)
 - [ ] Document monetization plan and tiering
 - [ ] Add feature gating by `subscription_tier`

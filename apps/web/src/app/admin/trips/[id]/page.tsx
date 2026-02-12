@@ -40,6 +40,7 @@ interface Driver {
     phone: string | null;
     vehicle_type: string | null;
     vehicle_plate: string | null;
+    photo_url?: string | null;
 }
 
 interface DriverAssignment {
@@ -335,6 +336,7 @@ interface TripDetailApiPayload {
     assignments?: Record<number, DriverAssignment>;
     accommodations?: Record<number, Accommodation>;
     reminderStatusByDay?: Record<number, ReminderDayStatus>;
+    busyDriversByDay?: Record<number, string[]>;
     latestDriverLocation?: DriverLocationSnapshot | null;
 }
 
@@ -375,11 +377,11 @@ const mockTripsById: Record<string, Trip> = {
             destination: "Kyoto, Japan",
             raw_data: {
                 days: [
-                    { day: 1, theme: "Arrival & Gion", activities: [] },
-                    { day: 2, theme: "Arashiyama & Bamboo", activities: [] },
-                    { day: 3, theme: "Fushimi Inari", activities: [] },
-                    { day: 4, theme: "Tea Ceremony", activities: [] },
-                    { day: 5, theme: "Departure", activities: [] },
+                    { day_number: 1, theme: "Arrival & Gion", activities: [] },
+                    { day_number: 2, theme: "Arashiyama & Bamboo", activities: [] },
+                    { day_number: 3, theme: "Fushimi Inari", activities: [] },
+                    { day_number: 4, theme: "Tea Ceremony", activities: [] },
+                    { day_number: 5, theme: "Departure", activities: [] },
                 ],
             },
         },
@@ -402,13 +404,13 @@ const mockTripsById: Record<string, Trip> = {
             destination: "Reykjavik, Iceland",
             raw_data: {
                 days: [
-                    { day: 1, theme: "Blue Lagoon", activities: [] },
-                    { day: 2, theme: "Golden Circle", activities: [] },
-                    { day: 3, theme: "Aurora Chase", activities: [] },
-                    { day: 4, theme: "Ice Caves", activities: [] },
-                    { day: 5, theme: "City Exploration", activities: [] },
-                    { day: 6, theme: "Whale Watching", activities: [] },
-                    { day: 7, theme: "Departure", activities: [] },
+                    { day_number: 1, theme: "Blue Lagoon", activities: [] },
+                    { day_number: 2, theme: "Golden Circle", activities: [] },
+                    { day_number: 3, theme: "Aurora Chase", activities: [] },
+                    { day_number: 4, theme: "Ice Caves", activities: [] },
+                    { day_number: 5, theme: "City Exploration", activities: [] },
+                    { day_number: 6, theme: "Whale Watching", activities: [] },
+                    { day_number: 7, theme: "Departure", activities: [] },
                 ],
             },
         },
@@ -486,6 +488,7 @@ export default function TripDetailPage() {
     const [liveLocationUrl, setLiveLocationUrl] = useState<string>("");
     const [creatingLiveLink, setCreatingLiveLink] = useState(false);
     const [reminderStatusByDay, setReminderStatusByDay] = useState<Record<number, ReminderDayStatus>>({});
+    const [busyDriversByDay, setBusyDriversByDay] = useState<Record<number, string[]>>({});
     const [latestDriverLocation, setLatestDriverLocation] = useState<DriverLocationSnapshot | null>(null);
 
     // Notification state
@@ -554,6 +557,7 @@ export default function TripDetailPage() {
         setAssignments(payload.assignments || {});
         setAccommodations(payload.accommodations || {});
         setReminderStatusByDay(payload.reminderStatusByDay || {});
+        setBusyDriversByDay(payload.busyDriversByDay || {});
         setLatestDriverLocation(payload.latestDriverLocation || null);
 
         setLoading(false);
@@ -737,30 +741,30 @@ export default function TripDetailPage() {
     };
 
     const fetchNearbyHotels = async (dayNumber: number, searchTerm?: string) => {
-            const day = itineraryDays.find((d) => d.day_number === dayNumber);
-            if (!day) return;
+        const day = itineraryDays.find((d) => d.day_number === dayNumber);
+        if (!day) return;
 
-            const cleanSearchTerm = (searchTerm || "").trim().toLowerCase();
+        const cleanSearchTerm = (searchTerm || "").trim().toLowerCase();
 
-            let center: { lat: number; lng: number } | undefined =
-                day.activities.find((a) => a.coordinates)?.coordinates;
+        let center: { lat: number; lng: number } | undefined =
+            day.activities.find((a) => a.coordinates)?.coordinates;
 
-            if (!center) {
-                const firstLocation = day.activities.find((a) => a.location?.trim())?.location;
-                if (firstLocation) {
-                    center = await geocodeLocation(firstLocation, trip?.destination);
-                }
+        if (!center) {
+            const firstLocation = day.activities.find((a) => a.location?.trim())?.location;
+            if (firstLocation) {
+                center = await geocodeLocation(firstLocation, trip?.destination);
             }
+        }
 
-            if (!center && trip?.destination) {
-                center = await geocodeLocation(trip.destination);
-            }
+        if (!center && trip?.destination) {
+            center = await geocodeLocation(trip.destination);
+        }
 
-            if (!center) return;
+        if (!center) return;
 
-            setHotelLoadingByDay((prev) => ({ ...prev, [dayNumber]: true }));
-            try {
-                const overpassQuery = `
+        setHotelLoadingByDay((prev) => ({ ...prev, [dayNumber]: true }));
+        try {
+            const overpassQuery = `
 [out:json][timeout:25];
 (
   node["tourism"="hotel"](around:9000,${center.lat},${center.lng});
@@ -771,62 +775,62 @@ export default function TripDetailPage() {
 out center tags 80;
                 `.trim();
 
-                const response = await fetch("https://overpass-api.de/api/interpreter", {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=UTF-8" },
-                    body: overpassQuery,
-                });
+            const response = await fetch("https://overpass-api.de/api/interpreter", {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=UTF-8" },
+                body: overpassQuery,
+            });
 
-                if (!response.ok) return;
-                const payload = (await response.json()) as OverpassResponse;
-                const elements = Array.isArray(payload?.elements) ? payload.elements : [];
+            if (!response.ok) return;
+            const payload = (await response.json()) as OverpassResponse;
+            const elements = Array.isArray(payload?.elements) ? payload.elements : [];
 
-                const suggestions: HotelSuggestion[] = elements
-                    .map((element) => {
-                        const tags = element.tags || {};
-                        const name = String(tags.name || "").trim();
-                        if (!name) return null;
+            const suggestions: HotelSuggestion[] = elements
+                .map((element) => {
+                    const tags = element.tags || {};
+                    const name = String(tags.name || "").trim();
+                    if (!name) return null;
 
-                        const lat = Number(element.lat ?? element.center?.lat);
-                        const lng = Number(element.lon ?? element.center?.lon);
-                        if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+                    const lat = Number(element.lat ?? element.center?.lat);
+                    const lng = Number(element.lon ?? element.center?.lon);
+                    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
 
-                        const addressParts = [
-                            tags["addr:housenumber"],
-                            tags["addr:street"],
-                            tags["addr:suburb"],
-                            tags["addr:city"],
-                        ].filter(Boolean);
-                        const address =
-                            String(tags["addr:full"] || "").trim() ||
-                            (addressParts.length ? addressParts.join(", ") : "Address not available");
+                    const addressParts = [
+                        tags["addr:housenumber"],
+                        tags["addr:street"],
+                        tags["addr:suburb"],
+                        tags["addr:city"],
+                    ].filter(Boolean);
+                    const address =
+                        String(tags["addr:full"] || "").trim() ||
+                        (addressParts.length ? addressParts.join(", ") : "Address not available");
 
-                        return {
-                            name,
-                            address,
-                            phone: String(tags.phone || tags["contact:phone"] || "").trim() || undefined,
-                            lat,
-                            lng,
-                            distanceKm: haversineKm(center!, { lat, lng }),
-                        } as HotelSuggestion;
-                    })
-                    .filter((item: HotelSuggestion | null): item is HotelSuggestion => !!item)
-                    .filter((item) =>
-                        cleanSearchTerm ? item.name.toLowerCase().includes(cleanSearchTerm) : true
-                    )
-                    .sort((a, b) => a.distanceKm - b.distanceKm)
-                    .slice(0, 8);
+                    return {
+                        name,
+                        address,
+                        phone: String(tags.phone || tags["contact:phone"] || "").trim() || undefined,
+                        lat,
+                        lng,
+                        distanceKm: haversineKm(center!, { lat, lng }),
+                    } as HotelSuggestion;
+                })
+                .filter((item: HotelSuggestion | null): item is HotelSuggestion => !!item)
+                .filter((item) =>
+                    cleanSearchTerm ? item.name.toLowerCase().includes(cleanSearchTerm) : true
+                )
+                .sort((a, b) => a.distanceKm - b.distanceKm)
+                .slice(0, 8);
 
-                setHotelSuggestions((prev) => ({ ...prev, [dayNumber]: suggestions }));
+            setHotelSuggestions((prev) => ({ ...prev, [dayNumber]: suggestions }));
 
-                if (!searchTerm && suggestions[0]) {
-                    fillAccommodationFromSuggestion(dayNumber, suggestions[0]);
-                }
-            } catch (error) {
-                console.error("Hotel lookup error:", error);
-            } finally {
-                setHotelLoadingByDay((prev) => ({ ...prev, [dayNumber]: false }));
+            if (!searchTerm && suggestions[0]) {
+                fillAccommodationFromSuggestion(dayNumber, suggestions[0]);
             }
+        } catch (error) {
+            console.error("Hotel lookup error:", error);
+        } finally {
+            setHotelLoadingByDay((prev) => ({ ...prev, [dayNumber]: false }));
+        }
     };
 
     const addActivity = (dayNumber: number) => {
@@ -915,7 +919,7 @@ out center tags 80;
                 await supabase
                     .from("itineraries")
                     .update({
-                        raw_data: { days: itineraryDays },
+                        raw_data: { days: itineraryDays } as any,
                     })
                     .eq("id", trip.itineraries.id);
             }
@@ -947,13 +951,13 @@ out center tags 80;
                 tripId,
                 type: "itinerary_update",
                 title: notificationTitle,
-                body: notificationBody || `Your trip to ${trip.destination} has been updated with new details.`,
+                body: notificationBody || `Your trip to ${trip?.destination || "Unknown Destination"} has been updated with new details.`,
             };
 
             if (useEmailTarget) {
                 payload.email = notificationEmail.trim();
             } else {
-                payload.userId = trip.profiles.id;
+                payload.userId = trip?.profiles?.id;
             }
 
             const response = await fetch("/api/notifications/send", {
@@ -1151,7 +1155,7 @@ out center tags 80;
                             </span>
                             <span className="flex items-center gap-1">
                                 <Calendar className="h-4 w-4" />
-                                {formatDate(trip.start_date)}
+                                {formatDate(trip.start_date || "")}
                             </span>
                             <span>{durationDays} days</span>
                         </div>
@@ -1178,9 +1182,9 @@ out center tags 80;
                         <DialogContent className="sm:max-w-[425px]">
                             <DialogHeader>
                                 <DialogTitle>Send Notification</DialogTitle>
-                            <DialogDescription>
-                                Send a push notification to the client regarding this trip. You can target by email to ensure it matches the mobile login.
-                            </DialogDescription>
+                                <DialogDescription>
+                                    Send a push notification to the client regarding this trip. You can target by email to ensure it matches the mobile login.
+                                </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
                                 <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -1356,11 +1360,22 @@ out center tags 80;
                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                     >
                                         <option value="">No driver assigned</option>
-                                        {drivers.map((driver) => (
-                                            <option key={driver.id} value={driver.id}>
-                                                {driver.full_name} - {driver.vehicle_type} ({driver.vehicle_plate})
-                                            </option>
-                                        ))}
+                                        {drivers.map((driver) => {
+                                            const isBusy = (busyDriversByDay[activeDay] || []).includes(driver.id);
+                                            return (
+                                                <option
+                                                    key={driver.id}
+                                                    value={driver.id}
+                                                    disabled={isBusy}
+                                                    className={isBusy ? "text-red-500" : ""}
+                                                >
+                                                    {driver.full_name}
+                                                    {driver.vehicle_type ? ` - ${driver.vehicle_type}` : ""}
+                                                    {driver.vehicle_plate ? ` (${driver.vehicle_plate})` : ""}
+                                                    {isBusy ? " (Unavailable - Assigned to another trip)" : ""}
+                                                </option>
+                                            );
+                                        })}
                                     </select>
                                 </div>
 

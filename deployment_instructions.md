@@ -9,7 +9,9 @@ Apply the latest schema/migrations (`push_tokens`, `notification_logs`, reminder
 npx supabase db push
 ```
 
-> **Note:** This includes migration `20260212070000_switch_ivfflat_to_hnsw.sql` which switches the `policy_embeddings` vector index from IVFFlat to HNSW. This migration is safe to run even if the table is empty, but the table must exist first.
+> **Note:** This includes migration- `20260212070000_switch_ivfflat_to_hnsw.sql` — HNSW index (requires `policy_embeddings` table to exist first)
+- `20260212090000_profile_onboarding.sql` — Profile onboarding fields
+- `20260212123000_webhook_and_notification_reliability.sql` — webhook reliability improvementsy, but the table must exist first.
 
 ## 2. Supabase Edge Function Configuration
 

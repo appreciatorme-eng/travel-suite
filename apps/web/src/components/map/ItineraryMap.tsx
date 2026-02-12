@@ -12,7 +12,7 @@ interface Coordinate {
 
 interface Activity {
     title: string;
-    location: string;
+    location?: string;
     start_time?: string;
     end_time?: string;
     coordinates?: Coordinate;
@@ -69,9 +69,9 @@ function MapRouteLine({ coordinates }: { coordinates: [number, number][] }) {
         if (!map || !isLoaded) return;
 
         const data = {
-            type: "Feature",
+            type: "Feature" as const,
             geometry: {
-                type: "LineString",
+                type: "LineString" as const,
                 coordinates,
             },
             properties: {},

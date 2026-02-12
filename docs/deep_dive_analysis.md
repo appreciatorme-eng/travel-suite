@@ -158,11 +158,13 @@ Organization-scoped RLS hardening has been applied across all sensitive tables:
 20260212004000 — notification_delivery_status
 20260212005500 — share_access_rate_limit
 20260212012000 — security_diagnostics_function
+20260212090000 — profile_onboarding
 ```
 
 **Pending migrations (in local `supabase/migrations/` but not yet applied):**
 - `20260212060000_fix_shared_itineraries_policy.sql` — improved RLS for shared itineraries
-- `20260212070000_switch_ivfflat_to_hnsw.sql` — HNSW index (requires `policy_embeddings` table to exist first)
+- `20260212065000_create_policy_embeddings.sql` — **NEW** creates table required for HNSW migration
+- `20260212070000_switch_ivfflat_to_hnsw.sql` — HNSW index (now safe to run)
 - `20260212123000_webhook_and_notification_reliability.sql` — webhook reliability improvements
 
 ### What's Good
@@ -173,13 +175,14 @@ Organization-scoped RLS hardening has been applied across all sensitive tables:
 - Realtime enabled for `driver_locations` and `trips`
 - Proper indexing on frequently queried columns
 - Org-scoped RLS on all multi-tenant tables
+- Driver assignment conflict detection (prevention of double-booking)
 
 ### What Needs Attention
 
 | Issue | Detail | Recommendation |
 |-------|--------|----------------|
-| **3 pending local migrations** | `fix_shared_itineraries`, `switch_ivfflat_to_hnsw`, `webhook_reliability` not yet applied | Run `npx supabase db push` |
-| **HNSW migration dependency** | Requires `policy_embeddings` table to exist first | Create table or defer |
+| **4 pending local migrations** | `fix_shared_itineraries`, `create_policy_embeddings`, `switch_ivfflat_to_hnsw`, `webhook_reliability` | Run `npx supabase db push` |
+| **HNSW migration dependency** | FIXED: `create_policy_embeddings` migration added | Ready to apply |
 | **`schema.sql` may be stale** | Master `schema.sql` (55KB) may be out of sync with 24 migration files | Regenerate from migrations |
 | **No soft-delete** | No `deleted_at` on any table — cascade deletes are permanent | Consider for compliance |
 | **No backup strategy** | Supabase Free tier has no automated backups | Enable PITR ($25/mo) or manual `pg_dump` |
@@ -207,6 +210,7 @@ Organization-scoped RLS hardening has been applied across all sensitive tables:
 - **Maps**: `flutter_map` with OpenStreetMap
 - **Notifications**: `firebase_messaging` + `flutter_local_notifications`
 - **Architecture**: Feature-based (`auth/`, `trips/`, `notifications/`) + core (`config/`, `constants/`, `services/`, `theme/`, `utils/`)
+- **Onboarding**: Role-based progressive profiling (Client: Diet/Mobility, Driver: Vehicle/License)
 - **Linting**: Modernized `analysis_options.yaml` with strict rules
 
 ### AI Agents (`apps/agents/`)

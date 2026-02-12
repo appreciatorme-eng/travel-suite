@@ -136,7 +136,7 @@ Build a **Mobile App for Clients** + **Admin Panel for Travel Agents** with auto
 ### Admin Panel Features (`apps/web/admin/`)
 - [x] **Dashboard** - Overview of active trips
 - [x] **Driver Management** - Add/edit external drivers
-- [x] **Trip Assignment** - Assign drivers + hotels
+- [x] **Trip Assignment** - Assign drivers (with conflict check) + hotels + map
 - [x] **Send Notifications** - Manual triggers + status
 - [x] **Client Management** - CRM, Kanban, Tags
 - [x] **Billing** - Invoices (foundation only, no Stripe yet)
@@ -164,6 +164,6 @@ Build a **Mobile App for Clients** + **Admin Panel for Travel Agents** with auto
 2. ✅ **AI API**: Generates valid itineraries (JWT verified)
 3. ✅ **Weather API**: Returns 7-day forecasts
 4. ✅ **Currency API**: Converts amounts correctly
-5. ✅ **Map**: Displays activity pins (MapLibre)
+5. ✅ **Map**: Displays activity pins, route segments, and numbered markers (MapLibre)
 6. ✅ **PDF**: Downloads correctly
 7. ✅ **Notifications**: Edge Function deployed, FCM configured

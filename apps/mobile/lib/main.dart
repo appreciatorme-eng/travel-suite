@@ -12,6 +12,7 @@ import 'core/services/push_notification_service.dart';
 import 'core/services/profile_role_service.dart';
 import 'features/trips/presentation/screens/trips_screen.dart';
 import 'features/auth/presentation/screens/auth_screen.dart';
+import 'features/auth/presentation/widgets/onboarding_guard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,7 +85,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
             PushNotificationService().init();
             PushNotificationService().flushPendingNavigation();
           }
-          return const TripsScreen();
+          return OnboardingGuard(child: const TripsScreen());
         }
 
         // Reset flag when logged out so it reinitializes on next login

@@ -1,5 +1,22 @@
 # Progress Log
 
+## Session: 2026-02-12 (Driver Assignment Enhancements)
+- **Status:** complete
+- **Main Goal:** Enhance admin trip assignment with conflict detection.
+- **Backend:**
+  - Implemented overlapping trip detection query.
+  - Added `busyDriversByDay` logic to identifying daily conflicts.
+  - Fixed `itineraries` type handling and date/duration calculations.
+- **Frontend web:**
+  - Updated Trip Detail page to disable busy drivers in dropdown.
+  - Added visual "Unavailable" indicator.
+  - Fixed mock data `day_number` schema issues.
+  - Cleaned up duplicate state/types.
+- **Files Modified:**
+  - `apps/web/src/app/api/admin/trips/[id]/route.ts`
+  - `apps/web/src/app/admin/trips/[id]/page.tsx`
+  - `apps/web/src/components/map/ItineraryMap.tsx`
+
 ## Session: 2026-02-12 (Security & Code Quality Hardening Pass)
 
 ### High-Impact Fixes
@@ -46,6 +63,17 @@
 - Updated `findings.md`: Added Leaflet removal note
 - Updated `docs/implementation_plan.md`: Fixed maps section from Leaflet to MapLibre GL
 - Updated `deployment_instructions.md`: Added HNSW migration note
+
+## Session: 2026-02-12 (P2 - Mobile Onboarding Flow)
+- **Status:** complete
+- **Main Goal:** Implement progressive onboarding for Clients and Drivers.
+- **Database:**
+  - Added `onboarding_step`, `bio`, `phone_whatsapp`, `dietary_requirements`, `mobility_needs`, `driver_info`, `client_info` to `profiles` table.
+  - Migration: `20260212090000_profile_onboarding.sql`
+- **Mobile App:**
+  - Created `OnboardingScreen` with role-specific steps.
+  - Implemented `OnboardingGuard` to enforce profile completion (or explicit skip).
+  - Added "Complete Profile" banner to `TripsScreen` for skipped users.
 
 ## Session: 2026-02-12 (P1 - Observability Finalization)
 
