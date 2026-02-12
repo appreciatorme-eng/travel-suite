@@ -1,0 +1,42 @@
+# GoBuddy Adventures – Dart Analysis Options
+# Uses the recommended Flutter lint rules for production apps.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    # Treat missing return types and unused imports as warnings
+    missing_return: warning
+    unused_import: warning
+  exclude:
+    # Generated files (Freezed, JSON serializable, etc.)
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.mocks.dart"
+    - "lib/generated/**"
+
+linter:
+  rules:
+    # ── Style ──
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    sort_child_properties_last: true
+
+    # ── Safety ──
+    avoid_print: true
+    avoid_relative_lib_imports: true
+    cancel_subscriptions: true
+    close_sinks: true
+    use_key_in_widget_constructors: true
+
+    # ── Clarity ──
+    always_declare_return_types: true
+    annotate_overrides: true
+    avoid_empty_else: true
+    prefer_is_empty: true
+    prefer_is_not_empty: true
+    unnecessary_brace_in_string_interps: true
+    unnecessary_const: true
+    unnecessary_new: true

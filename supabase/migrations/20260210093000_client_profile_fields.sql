@@ -1,0 +1,16 @@
+alter table public.profiles
+    add column if not exists preferred_destination text,
+    add column if not exists travelers_count integer,
+    add column if not exists budget_min numeric,
+    add column if not exists budget_max numeric,
+    add column if not exists travel_style text,
+    add column if not exists interests text[],
+    add column if not exists home_airport text,
+    add column if not exists notes text,
+    add column if not exists lead_status text default 'new',
+    add column if not exists lifecycle_stage text default 'lead',
+    add column if not exists last_contacted_at timestamptz,
+    add column if not exists welcome_email_sent_at timestamptz,
+    add column if not exists marketing_opt_in boolean default false,
+    add column if not exists referral_source text,
+    add column if not exists source_channel text;
