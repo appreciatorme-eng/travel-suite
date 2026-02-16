@@ -211,7 +211,6 @@ const mockWhatsAppHealth: WhatsAppHealthPayload = {
 };
 
 export default function NotificationLogsPage() {
-    const supabase = createClient();
     const [logs, setLogs] = useState<NotificationLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -256,6 +255,7 @@ export default function NotificationLogsPage() {
                 return;
             }
 
+            const supabase = createClient();
             let query = supabase
                 .from("notification_logs")
                 .select(`
@@ -311,7 +311,7 @@ export default function NotificationLogsPage() {
         } finally {
             setLoading(false);
         }
-    }, [supabase, statusFilter, useMockAdmin]);
+    }, [statusFilter, useMockAdmin]);
 
     useEffect(() => {
         void fetchLogs();

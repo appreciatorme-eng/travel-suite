@@ -507,7 +507,6 @@ export default function TripDetailPage() {
         []
     );
 
-    const supabase = createClient();
     const useMockAdmin = process.env.NEXT_PUBLIC_MOCK_ADMIN === "true";
 
     const fetchData = useCallback(async () => {
@@ -523,6 +522,7 @@ export default function TripDetailPage() {
             return;
         }
 
+        const supabase = createClient();
         let { data: { session } } = await supabase.auth.getSession();
         if (!session) {
             await supabase.auth.refreshSession();
@@ -561,7 +561,7 @@ export default function TripDetailPage() {
         setLatestDriverLocation(payload.latestDriverLocation || null);
 
         setLoading(false);
-    }, [supabase, tripId, useMockAdmin]);
+    }, [tripId, useMockAdmin]);
 
     useEffect(() => {
         void fetchData();
@@ -571,6 +571,7 @@ export default function TripDetailPage() {
         const loadExistingShare = async () => {
             if (!tripId || useMockAdmin) return;
             try {
+                const supabase = createClient();
                 const { data: { session } } = await supabase.auth.getSession();
                 const response = await fetch(`/api/location/share?tripId=${tripId}&dayNumber=${activeDay}`, {
                     headers: {
@@ -587,7 +588,7 @@ export default function TripDetailPage() {
         };
 
         void loadExistingShare();
-    }, [activeDay, tripId, useMockAdmin, supabase.auth]);
+    }, [activeDay, tripId, useMockAdmin]);
 
     useEffect(() => {
         const timers = hotelSearchDebounceRef.current;

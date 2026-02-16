@@ -48,7 +48,6 @@ const mockOrganization: Organization = {
 };
 
 export default function SettingsPage() {
-    const supabase = createClient();
     const [organization, setOrganization] = useState<Organization | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -70,6 +69,7 @@ export default function SettingsPage() {
                 return;
             }
 
+            const supabase = createClient();
             const { data, error } = await supabase
                 .from("organizations")
                 .select("*")
@@ -93,7 +93,7 @@ export default function SettingsPage() {
         } finally {
             setLoading(false);
         }
-    }, [supabase, useMockAdmin]);
+    }, [useMockAdmin]);
 
     useEffect(() => {
         void fetchSettings();

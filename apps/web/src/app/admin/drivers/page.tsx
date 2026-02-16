@@ -85,7 +85,6 @@ const VEHICLE_TYPES = [
 ];
 
 export default function DriversPage() {
-    const supabase = createClient();
     const [drivers, setDrivers] = useState<ExternalDriver[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -117,6 +116,7 @@ export default function DriversPage() {
             return;
         }
 
+        const supabase = createClient();
         const { data: profile } = await supabase
             .from("profiles")
             .select("organization_id")
@@ -183,7 +183,7 @@ export default function DriversPage() {
         });
         setDriverAccountLinks(mapping);
         setLoading(false);
-    }, [supabase, useMockAdmin]);
+    }, [useMockAdmin]);
 
     useEffect(() => {
         void fetchDrivers();

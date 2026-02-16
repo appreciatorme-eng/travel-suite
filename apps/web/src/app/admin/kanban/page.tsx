@@ -100,7 +100,6 @@ const mockContacts: ContactItem[] = [
 ];
 
 export default function AdminKanbanPage() {
-    const supabase = createClient();
     const useMockAdmin = process.env.NEXT_PUBLIC_MOCK_ADMIN === "true";
     const [clients, setClients] = useState<ClientCard[]>([]);
     const [contacts, setContacts] = useState<ContactItem[]>([]);
@@ -118,6 +117,7 @@ export default function AdminKanbanPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
+            const supabase = createClient();
             if (useMockAdmin) {
                 setClients(mockClients);
                 setContacts(mockContacts);
@@ -175,7 +175,7 @@ export default function AdminKanbanPage() {
         } finally {
             setLoading(false);
         }
-    }, [supabase, useMockAdmin]);
+    }, [useMockAdmin]);
 
     useEffect(() => {
         void fetchData();

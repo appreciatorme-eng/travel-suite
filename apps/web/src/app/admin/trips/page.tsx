@@ -75,7 +75,6 @@ export default function AdminTripsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const supabase = createClient();
     const useMockAdmin = process.env.NEXT_PUBLIC_MOCK_ADMIN === "true";
 
     const fetchTrips = useCallback(async () => {
@@ -86,6 +85,7 @@ export default function AdminTripsPage() {
             return;
         }
 
+        const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
         const response = await fetch(`/api/admin/trips?status=${encodeURIComponent(statusFilter)}&search=${encodeURIComponent(searchQuery)}`, {
             headers: {
@@ -103,7 +103,7 @@ export default function AdminTripsPage() {
         const payload = await response.json();
         setTrips(payload.trips || []);
         setLoading(false);
-    }, [supabase, statusFilter, searchQuery, useMockAdmin]);
+    }, [statusFilter, searchQuery, useMockAdmin]);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect

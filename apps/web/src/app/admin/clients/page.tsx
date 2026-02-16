@@ -109,7 +109,6 @@ const LIFECYCLE_STAGE_LABELS: Record<(typeof LIFECYCLE_STAGES)[number], string> 
 };
 
 export default function ClientsPage() {
-    const supabase = createClient();
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -149,6 +148,7 @@ export default function ClientsPage() {
                 return;
             }
 
+            const supabase = createClient();
             const { data: { session } } = await supabase.auth.getSession();
             const headers: Record<string, string> = {};
             if (session?.access_token) {
@@ -168,7 +168,7 @@ export default function ClientsPage() {
         } finally {
             setLoading(false);
         }
-    }, [supabase, useMockAdmin]);
+    }, [useMockAdmin]);
 
     useEffect(() => {
         void fetchClients();

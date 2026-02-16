@@ -90,7 +90,6 @@ const mockActivities: ActivityItem[] = [
 ];
 
 export default function AdminDashboard() {
-    const supabase = createClient();
     const [stats, setStats] = useState<DashboardStats>({
         totalDrivers: 0,
         totalClients: 0,
@@ -104,6 +103,8 @@ export default function AdminDashboard() {
     const useMockAdmin = process.env.NEXT_PUBLIC_MOCK_ADMIN === "true";
 
     useEffect(() => {
+        const supabase = createClient();
+
         const fetchData = async () => {
             setLoading(true);
             try {
@@ -185,7 +186,7 @@ export default function AdminDashboard() {
         };
 
         fetchData();
-    }, [supabase, useMockAdmin]);
+    }, [useMockAdmin]);
 
     useEffect(() => {
         let mounted = true;
