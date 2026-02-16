@@ -56,10 +56,11 @@ export async function POST(req: NextRequest) {
         const { prompt, days } = RequestSchema.parse(body);
 
         // Debug: Log environment variables (remove after debugging)
-        console.log('DEBUG - Checking API keys:');
+        console.log('🔍 DEBUG v2 - Deployment timestamp:', new Date().toISOString());
         console.log('GOOGLE_API_KEY exists:', !!process.env.GOOGLE_API_KEY);
         console.log('GOOGLE_GEMINI_API_KEY exists:', !!process.env.GOOGLE_GEMINI_API_KEY);
         console.log('All env keys:', Object.keys(process.env).filter(k => k.includes('GOOGLE') || k.includes('GEMINI')));
+        console.log('API Key value (first 10 chars):', process.env.GOOGLE_API_KEY?.substring(0, 10));
 
         const apiKey =
             process.env.GOOGLE_API_KEY ||
