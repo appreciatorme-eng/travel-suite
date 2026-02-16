@@ -87,40 +87,35 @@ export default function CurrencyConverter({
 
     if (compact) {
         return (
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+            <div>
                 <div className="flex items-center gap-2 mb-3">
                     <ArrowRightLeft className="w-4 h-4 text-indigo-600" />
-                    <span className="font-medium text-indigo-900 text-sm">Currency Converter</span>
+                    <span className="font-semibold text-sm text-gray-700">Currency Converter</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         onBlur={convert}
-                        className="w-24 px-2 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Amount"
+                        className="w-20 px-2 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="100"
                     />
                     <select
                         value={fromCurrency}
                         onChange={(e) => setFromCurrency(e.target.value)}
-                        className="px-2 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-indigo-500"
+                        className="px-2 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-indigo-500 bg-white"
                     >
                         {CURRENCIES.map((c) => (
                             <option key={c.code} value={c.code}>{c.code}</option>
                         ))}
                     </select>
-                    <button
-                        onClick={swapCurrencies}
-                        className="p-1 hover:bg-indigo-100 rounded transition-colors"
-                    >
-                        <ArrowRightLeft className="w-4 h-4 text-indigo-600" />
-                    </button>
+                    <ArrowRightLeft className="w-4 h-4 text-gray-400" />
                     <select
                         value={toCurrency}
                         onChange={(e) => setToCurrency(e.target.value)}
-                        className="px-2 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-indigo-500"
+                        className="px-2 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-indigo-500 bg-white"
                     >
                         {CURRENCIES.map((c) => (
                             <option key={c.code} value={c.code}>{c.code}</option>
@@ -136,11 +131,13 @@ export default function CurrencyConverter({
                 )}
 
                 {result && !loading && (
-                    <div className="mt-2 text-lg font-bold text-indigo-900">
-                        {result.formatted}
-                        <span className="text-xs font-normal text-gray-500 ml-2">
-                            (1 {fromCurrency} = {result.rate.toFixed(4)} {toCurrency})
-                        </span>
+                    <div className="mt-3 p-2 bg-indigo-50 rounded-lg">
+                        <div className="text-sm font-semibold text-indigo-900">
+                            {CURRENCIES.find(c => c.code === fromCurrency)?.symbol}{Number(amount).toLocaleString()} {fromCurrency} = {result.formatted}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                            1 {fromCurrency} = {result.rate.toFixed(4)} {toCurrency}
+                        </div>
                     </div>
                 )}
 

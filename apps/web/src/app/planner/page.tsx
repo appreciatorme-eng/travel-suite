@@ -310,8 +310,8 @@ export default function PlannerPage() {
                                                             </Badge>
                                                         </div>
 
-                                                        {images[act.location] && (
-                                                            <div className="md:w-32 md:h-24 w-full h-48 rounded-lg overflow-hidden shrink-0 shadow-sm ring-1 ring-gray-100">
+                                                        <div className="md:w-32 md:h-24 w-full h-48 rounded-lg overflow-hidden shrink-0 shadow-sm ring-1 ring-gray-100 bg-gradient-to-br from-gray-100 to-gray-200">
+                                                            {images[act.location] ? (
                                                                 <Image
                                                                     src={images[act.location]!}
                                                                     alt={act.location}
@@ -319,8 +319,12 @@ export default function PlannerPage() {
                                                                     height={96}
                                                                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                                                                 />
-                                                            </div>
-                                                        )}
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center">
+                                                                    <MapPin className="w-8 h-8 text-gray-400" />
+                                                                </div>
+                                                            )}
+                                                        </div>
 
                                                         <div className="flex-1 space-y-2">
                                                             <div className="flex items-start justify-between">

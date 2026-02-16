@@ -93,10 +93,18 @@ export default function WeatherWidget({ destination, days = 7, compact = false }
         if (!today) return null;
 
         return (
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-                {getWeatherIcon(today.weatherCode, "w-5 h-5")}
-                <span className="font-medium">{today.tempMax}°/{today.tempMin}°C</span>
-                <span className="text-gray-400">{today.weatherDescription}</span>
+            <div>
+                <div className="flex items-center gap-2 mb-2">
+                    <Thermometer className="w-4 h-4 text-sky-600" />
+                    <span className="font-semibold text-sm text-gray-700">Weather Forecast</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{weather.location}</span>
+                    <div className="flex items-center gap-2">
+                        {getWeatherIcon(today.weatherCode, "w-5 h-5")}
+                        <span className="font-medium text-gray-900">{today.tempMax}° / {today.tempMin}°C</span>
+                    </div>
+                </div>
             </div>
         );
     }
